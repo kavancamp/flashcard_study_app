@@ -1,234 +1,126 @@
 from pathlib import Path
 import tkinter as tk
 from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, ttk, messagebox
-import tkinter.font as tkFont
+from ttkbootstrap import Style
 
 OUTPUT_PATH = Path(__file__).parent
-ASSETS_PATH = OUTPUT_PATH / Path(r"/home/kvanc/boot_dev/flashcard_study_app/assets/frame1")
+ASSETS_PATH = OUTPUT_PATH / "assets/images"
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
-class Window:
-    def __init__(self, width, height):
-        self.root = Tk()
-        self.root.geometry(f"{width}x{height}")
-        self.root.title("Flashcards")
+
+class FlashcardApp:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.geometry("420x538")
         self.root.configure(bg="white")
+        self.root.title("Flashcard App")
         self.root.resizable(False, False)
         
-        self.canvas = Canvas(self.root, width=width, height=height, bg='white', bd=0, highlightthickness=0)
-        self.canvas.place(x=0, y=0)
+        self.active_tab_index = None
+        self.tab_buttons = []
+        self.tab_images = []
 
-        self.stored_words = []  
-
-        self.load_header()  
-        self.root.mainloop()
-        
-    def load_header(self):    
-        self.canvas.delete("all")
-
-        self.canvas.create_rectangle(0, 7, 420, 538, fill="#FFFFFF", outline="")
-        self.canvas.create_text(55, 13, anchor="nw", text="Flashcard App", fill="#8CD09F", font=("Ribeye", 24))
-
-        self.button_image_1 = PhotoImage(file=relative_to_assets("button_1.png"))
-        new_set_button = Button(
+        # persistent header above the notebook
+        self.header_canvas = tk.Canvas(
             self.root,
-            image=self.button_image_1,
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: self.load_input_screen,
-            relief="flat"
+            bg = "#FFFFFF",
+            height = 100,
+            width = 419,
+            bd = 0,
+            highlightthickness = 0,
+            relief = "ridge"
         )
-        new_set_button.place(
-            x=11.0,
-            y=91.0,
-            width=98,
-            height=36
-        )
-        new_set_button.bind("<Enter>", lambda e: new_set_button.config(image=self.button_image_hover_1))
-        new_set_button.bind("<Leave>", lambda e: new_set_button.config(image=self.button_image_1))
-
-        self.button_image_2 = PhotoImage(file=relative_to_assets("button_2.png"))
-        my_sets_button = Button(
-            self.root,
-            image=self.button_image_2,
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: self.load_my_sets_screen,
-            relief="flat"
-        )
-        my_sets_button.place(x=162.0, y=91.0, width=98.0, height=36.0)
-        my_sets_button.bind("<Enter>", lambda e: new_set_button.config(image=self.button_image_hover_2))
-        my_sets_button.bind("<Leave>", lambda e: new_set_button.config(image=self.button_image_2))
-        
-        self.button_image_2 = PhotoImage(file=relative_to_assets("button_2.png"))
-        self.button_image_hover_2 = PhotoImage( file=relative_to_assets("button_hover_2.png"))
-        
-        self.button_image_3 = PhotoImage(file=relative_to_assets("button_3.png"))
-        self.button_image_hover_3 = PhotoImage(file=relative_to_assets("button_hover_3.png"))
-
-        practice_button = Button(
-            self.root,
-            image=self.button_image_3,
-            borderwidth=0,
-            highlightthickness=0,
-            command=self.load_practice_screen,
-            relief="flat"
-        )
-        practice_button.place(x=313, y=91, width=98, height=36)
-        practice_button.bind("<Enter>", lambda e: practice_button.config(image=self.button_image_hover_3))
-        practice_button.bind("<Leave>", lambda e: practice_button.config(image=self.button_image_3))
-        
-        def load_input_screen(self):
-            self.canvas.delete("all")
-
-            self.entry_1 = Entry(self.root, bd=0, bg="#F1F5FF", fg="#000716", highlightthickness=0)
-            self.entry_1.place(x=50, y=200, width=300, height=34)
-
-            button_image_save = PhotoImage(file=relative_to_assets("button_4.png"))
-            button_hover_save = PhotoImage(file=relative_to_assets("button_hover_4.png"))
-
-            save_button = Button(
-                self.root,
-                image=button_image_save,
-                borderwidth=0,
-                highlightthickness=0,
-                command=self.save_input,
-                relief="flat"
-            )
-            save_button.image = button_image_save
-            save_button.place(x=135, y=260, width=151, height=69)
-            save_button.bind("<Enter>", lambda e: save_button.config(image=button_hover_save))
-            save_button.bind("<Leave>", lambda e: save_button.config(image=button_image_save))
-            
-    def save_input(self):
-        word = self.entry_1.get()
-        if word:
-            self.stored_words.append(word)
-            print("Saved word:", word)
-            self.entry_1.delete(0, tk.END)
-
-    def load_practice_screen(self):
-        self.canvas.delete("all")
-        self.canvas.create_rectangle(11, 138, 411, 401, fill="#FFFFFF", outline="")
-
-        if self.stored_words:
-            word = self.stored_words[0]
-        else:
-            word = "No words saved"
-
-        self.canvas.create_text(65, 180, anchor="nw", text=word, fill="#000000", font=("Arial", 16))
-
-        button_image_4 = PhotoImage(file=relative_to_assets("button_4.png"))
-        flip_button = Button(
-            image=self.button_image_4,
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: self.load_practice_screen,
-            relief="flat"
-        )
-        flip_button.place(
-            x=56.0,
-            y=411.0,
-            width=137.0,
-            height=55.0
-        )
-  
-        def flip_button_leave(e):
-            flip_button.config(
-                image=button_image_4
-            )
-
-        flip_button.bind('<Enter>', lambda e: flip_button.config(image=button_image_hover_4))
-        flip_button.bind('<Leave>', lambda e: flip_button.config(image=button_image_4))
-
-        
-        button_image_5 = PhotoImage(file=relative_to_assets("button_5.png"))
-        next_button = Button(
-            image=button_image_5,
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: print("Next button_5 clicked"),
-            relief="flat"
-        )
-        
-        button_image_hover_3 = PhotoImage(
-            file=relative_to_assets("button_hover_3.png"))
-
-
-        
-        next_button.place(
-            x=230.0,
-            y=411.0,
-            width=137.0,
-            height=55.0
-        )
-
-        button_image_6 = PhotoImage(file=relative_to_assets("button_6.png"))
-        back_button = Button(
-            image=button_image_6,
-            borderwidth=0,
-            highlightthickness=0,
-            command=lambda: print("back_button button_6 clicked"),
-            relief="flat"
-        )
-        back_button.place(
-            x=140.0,
-            y=472.0,
-            width=147.0,
-            height=61.0
-        )
-        canvas.create_rectangle(
-            11.0,
-            138.0,
-            411.0,
-            401.0,
+        self.header_canvas.pack(side="top", fill="x")
+        self.header_canvas.create_rectangle(
+            0.0,
+            7,
+            419.0,
+            538.0,
             fill="#FFFFFF",
             outline="")
-
-        button_image_hover_5 = PhotoImage(
-            file=relative_to_assets("button_hover_5.png"))
-
-        def next_button_hover(e):
-            next_button.config(
-                image=button_image_hover_5
-            )
-        def next_button_leave(e):
-            next_button.config(
-                image=button_image_5
-            )
-
-        next_button.bind('<Enter>', next_button_hover)
-        next_button.bind('<Leave>', next_button_leave)
-
-        button_image_hover_6 = PhotoImage(
-            file=relative_to_assets("button_hover_6.png"))
-
-        def back_button_hover(e):
-            back_button.config(
-                image=button_image_hover_6
-            )
-        def back_button_leave(e):
-            back_button.config(
-                image=button_image_6
-            )
-
-        back_button.bind('<Enter>', back_button_hover)
-        back_button.bind('<Leave>', back_button_leave)
-
-        image_image_1 = PhotoImage(
-            file=relative_to_assets("image_1.png"))
-        image_1 = canvas.create_image(
-            211.0,
-            269.0,
-            image=image_image_1
+        self.header_image = PhotoImage(file=relative_to_assets("header_images/header_image.png"))
+        button_1 = Button(
+            image=self.header_image,
+            borderwidth=0,
+            highlightthickness=0,
+            relief="flat"
         )
-        canvas.create_text(
-            65.0,
-            180.0,
-            anchor="nw",
-            text="card text goes here",
-            fill="#000000",
-            font=(ribeye, 16 * -1)
+        button_1.place(
+            x=0.0,
+            y=0.0,
+            width=419.0,
+            height=82.0
         )
+        #Load images for each tab
+        self.tabs = [
+            {
+                "base": PhotoImage(file=relative_to_assets("header_images/new_set.png")),
+                "hover": PhotoImage(file=relative_to_assets("header_images/new_set_hover.png")),
+                "command": self.load_create_set
+
+            },
+            {
+                "base": PhotoImage(file=relative_to_assets("header_images/my_sets.png")),
+                "hover": PhotoImage(file=relative_to_assets("header_images/my_sets_hover.png")),
+                "command": self.load_my_sets
+            },
+            {
+                "base": PhotoImage(file=relative_to_assets("header_images/practice.png")),
+                "hover": PhotoImage(file=relative_to_assets("header_images/practice_hover.png")),
+                "command": self.load_practice
+            }
+        ]
+
+        # Create header tab bar
+        self.tab_bar = tk.Frame(self.root, bg="white")
+        self.tab_bar.pack(pady=10)
+
+        for index, tab in enumerate(self.tabs):
+            btn = tk.Label(self.tab_bar, image=tab["base"], bg="white", cursor="hand2")
+            btn.grid(row=0, column=index, padx=10)
+            btn.bind("<Enter>", lambda e, i=index: self.on_hover(i))
+            btn.bind("<Leave>", lambda e, i=index: self.on_leave(i))
+            btn.bind("<Button-1>", lambda e, i=index: self.select_tab(i))
+            self.tab_buttons.append(btn)
+
+        # Create content area
+        self.content_frame = tk.Frame(self.root, bg="white")
+        self.content_frame.pack(fill="both", expand=True)
+
+        # Select first tab by default
+        self.select_tab(0)
+        self.root.mainloop()
+        
+    def on_hover(self, index):
+        if index != self.active_tab_index:
+            self.tab_buttons[index].configure(image=self.tabs[index]["hover"])
+
+    def on_leave(self, index):
+        if index != self.active_tab_index:
+            self.tab_buttons[index].configure(image=self.tabs[index]["base"])
+
+    def select_tab(self, index):
+        # Reset previous active
+        if self.active_tab_index is not None:
+            self.tab_buttons[self.active_tab_index].configure(image=self.tabs[self.active_tab_index]["base"])
+
+        # Set new active
+        self.active_tab_index = index
+        self.tab_buttons[index].configure(image=self.tabs[index]["hover"])
+
+        # Clear and load new content
+        for widget in self.content_frame.winfo_children():
+            widget.destroy()
+
+        self.tabs[index]["command"]()
+
+    def load_create_set(self):
+        tk.Label(self.content_frame, text="Create Set Screen", bg="white").pack()
+
+    def load_my_sets(self):
+        tk.Label(self.content_frame, text="My Sets Screen", bg="white").pack()
+
+    def load_practice(self):
+        tk.Label(self.content_frame, text="Practice Screen", bg="white").pack()
     
