@@ -1,4 +1,4 @@
-from database_cleaned import init_db, add_new_stack, add_new_card
+from database import init_db, add_new_stack, add_new_card
 
 def seed():
     # Initialize DB and tables
