@@ -173,5 +173,5 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-database_cleaned.py
+flashcards.db
 /data/
