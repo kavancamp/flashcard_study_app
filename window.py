@@ -211,13 +211,8 @@ class FlashcardApp:
         self.current_tabs = []
 
         # # Label to display the word on flashcards
-        self.word_label = tk.Label(self.content_frame, text='word', bg="#F1F5FF", font=('TkDefaultFont', 24))
-        self.word_label.pack(padx=5, pady=20)
-        
-        # # Label to display the definition on flashcards
-        self.definition_label = tk.Label(self.content_frame,  text='definition', bg="#F1F5FF")
-        self.definition_label.pack(padx=5, pady=30)
-        tk.Label(self.content_frame, text="Practice Area", bg="#F1F5FF", font=(self.custom_font, 10)).pack()
+        self.word_label = tk.Label(self.content_frame, text='word', bg="#F1F5FF", font=(self.custom_font, 24))
+        self.word_label.pack(padx=5, pady=50)
 
         # Button to flip the flashcard 
         self.button_image_flip = PhotoImage(file=relative_to_assets("practice_images/flip.png"))
@@ -245,7 +240,7 @@ class FlashcardApp:
             image=self.button_image_next,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: [print("Flipping card..."), self.next_card()],
+            command=lambda: [print("Next card..."), self.next_card()],
             relief="flat"
         )       
         next_button.place(
@@ -263,7 +258,7 @@ class FlashcardApp:
             image=self.button_image_back,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: [print("Flipping card..."), self.prev_card],
+            command=lambda: [print("previous card..."), self.prev_card],
             relief="flat"
         )
         back_button.place(
@@ -366,16 +361,21 @@ class FlashcardApp:
             if 0 <= self.card_index < len(self.current_cards):
                 word, _ = self.current_cards[self.card_index]
                 self.word_label.config(text=word)
-                self.definition_label.config(text='')
+                self.card_flipped = False # Track if card is flipped
             else:
                 self.clear_flashcard_display()
 
     # flip the current card and display its definition
     def flip_card(self):
         if self.current_cards:
-            _, definition = self.current_cards[self.card_index]
-            self.definition_label.config(text=definition)
-
+            word, definition = self.current_cards[self.card_index]
+           #self.definition_label.config(text=definition)
+            if not getattr(self, "card_flipped", False):
+                self.word_label.config(text=definition)
+                self.card_flipped = True
+            else:
+                self.word_label.config(text=word)
+                self.card_flipped = False
     # Function to move to the next card
     def next_card(self):
         if self.current_cards:
