@@ -218,7 +218,7 @@ class FlashcardApp:
        
     def load_my_sets(self):
         self.clear_content_frame() #clear previous data    
-        tk.Label(self.content_frame, text="" ).pack()
+
         # Combobox  for selecting card sets
         self.sets_combobox = ttk.Combobox(self.content_frame, state='readonly', width=30)
         self.sets_combobox.pack(padx=5, pady=20)
