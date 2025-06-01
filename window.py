@@ -1,8 +1,6 @@
 from pathlib import Path
 import tkinter as tk
-from tkinter import Tk, Canvas, Entry, Text, Button, PhotoImage, ttk, messagebox, Label, Toplevel
-import tkinter.font as Font
-from ttkbootstrap import Style
+from tkinter import Tk, Canvas, Entry, Button, PhotoImage, ttk, messagebox, Label, Toplevel
 import random
 from database import init_db, add_new_stack, add_new_card, get_stacks, get_cards, delete_set, update_card, delete_card
 
@@ -281,7 +279,7 @@ class FlashcardApp:
             image=self.button_image_flip,
             borderwidth=0,
             highlightthickness=0,
-            command=lambda: [print("Flipping card..."), self.flip_card()],
+            command=lambda: self.flip_card(),
             relief="flat"
         )
         flip_button.place(
@@ -359,33 +357,100 @@ class FlashcardApp:
         word = self.word.get().strip()
         definition = self.definition.get().strip()
 
-        if stack_name and word and definition:
-            if stack_name not in get_stacks():
-                stack_id = add_new_stack(stack_name)
+        sets = get_stacks()
+
+        if not stack_name:
+            messagebox.showwarning("Warning", "Please enter a set name.")
+            return
+
+        if not word or not definition:
+            if stack_name in sets:
+                messagebox.showwarning("Warning", "Please enter both a word and a definition.")
             else:
-                stack_id = get_stacks()[stack_name]
+                messagebox.showwarning("Warning", "Please enter a word, definition, and set name.")
+            return
+            # Check for duplicate word
 
-            add_new_card(stack_id, word, definition)
-
-            self.word.set('')
-            self.definition.set('')
-
-            self.fill_combobox() 
+        # If all inputs are valid, proceed to save
+        if stack_name not in sets:
+            stack_id = add_new_stack(stack_name)
         else:
-            messagebox.showwarning("Warning", "Please enter a word, definition and set name.")
-                       
+            stack_id = sets[stack_name]
+        # duplicate?
+        existing_cards = get_cards(stack_id)
+        if any(w.lower() == word.lower() for _, w, _ in existing_cards):
+            result = messagebox.askyesno("Duplicate Word", f"The word '{word}' already exists in '{stack_name}'. Add anyway?")
+            if not result:
+                return  # Don't add the card if user says No
+        add_new_card(stack_id, word, definition)
+
+        # Clear fields
+        self.word.set('')
+        self.definition.set('')
+        self.fill_combobox()   
+    # def save_word(self):
+    #     stack_name = self.stack_name.get().strip()
+    #     word = self.word.get().strip()
+    #     definition = self.definition.get().strip()
+
+    #     if stack_name and word and definition:
+    #         if stack_name not in get_stacks():
+    #             stack_id = add_new_stack(stack_name)
+    #         else:
+    #             stack_id = get_stacks()[stack_name]
+
+    #         add_new_card(stack_id, word, definition)
+
+    #         self.word.set('')
+    #         self.definition.set('')
+
+    #         self.fill_combobox() 
+    #     else:
+    #         messagebox.showwarning("Warning", "Please enter a word, definition and set name.")
     def save_set(self):
         stack_name = self.stack_name.get().strip()
-        if stack_name:
-            if stack_name not in get_stacks():
-                stack_id = add_new_stack(stack_name)
-                self.fill_combobox()
-                self.stack_name.set('')
-                self.word.set('')
-                self.definition.set('')
-                print(f"Saved word: {self.word.get()} with definition: {self.definition.get()} to set: {stack_name}")
-        else:
+        word = self.word.get().strip()
+        definition = self.definition.get().strip()
+
+        sets = get_stacks()
+
+        if not stack_name:
             messagebox.showwarning("Warning", "Please enter a set name.")
+            return
+
+        if stack_name in sets:
+            if not word or not definition:
+                messagebox.showwarning("Warning", "This set already exists. Please enter a word and definition to add a card.")
+                return
+        else:
+            # Create new set
+            stack_id = add_new_stack(stack_name)
+            self.fill_combobox()
+            self.stack_name.set('')
+        # Add card if word and definition are present
+        if word and definition:
+            stack_id = sets.get(stack_name, add_new_stack(stack_name))
+            add_new_card(stack_id, word, definition)
+            self.word.set('')
+            self.definition.set('')
+            self.fill_combobox()
+            self.entry_1.delete(0, tk.END)
+            self.entry_2.delete(0, tk.END)
+            self.entry_3.delete(0, tk.END)
+        else:
+            messagebox.showinfo("Info", "Set saved without cards.")                  
+    # def save_set(self):
+    #     stack_name = self.stack_name.get().strip()
+    #     if stack_name:
+    #         if stack_name not in get_stacks():
+    #             stack_id = add_new_stack(stack_name)
+    #             self.fill_combobox()
+    #             self.stack_name.set('')
+    #             self.word.set('')
+    #             self.definition.set('')
+    #             print(f"Saved word: {self.word.get()} with definition: {self.definition.get()} to set: {stack_name}")
+    #     else:
+    #         messagebox.showwarning("Warning", "Please enter a set name.")
                 
     def delete_selected_set(self):
         stack_name = self.sets_combobox.get()
